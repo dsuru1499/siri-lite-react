@@ -2,10 +2,27 @@
   "name": "siri-lite-react",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.17",
+    "@fortawesome/free-solid-svg-icons": "^5.8.1",
+    "@fortawesome/react-fontawesome": "^0.1.4",
+    "bootstrap": "^4.3.1",
+    "debug": "^4.1.1",
+    "leaflet": "^1.4.0",
+    "lodash": "^4.17.11",
+    "moment": "^2.24.0",
+    "node-sass": "^4.12.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.0"
+    "react-moment": "^0.9.2",
+    "react-redux": "^7.0.3",
+    "react-scripts": "3.0.0",
+    "redux": "^4.0.1",
+    "redux-actions": "^2.6.5",
+    "redux-logger": "^3.0.6",
+    "redux-observable": "^1.1.0",
+    "redux-thunk": "^2.3.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -27,5 +44,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "devDependencies": {}
 }
