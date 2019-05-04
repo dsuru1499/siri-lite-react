@@ -1,68 +1,78 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Siri Demo
+Demo OpenShift (Redhat Kubernetes) 
 
-## Available Scripts
+http://siri-demo-siri-demo.7e14.starter-us-west-2.openshiftapps.com/siri-cli/index.html
 
-In the project directory, you can run:
+### Siri Lite Cli (version Angular)
+http://siri-demo-siri-demo.7e14.starter-us-west-2.openshiftapps.com/siri-lite-cli/index.html
 
-### `npm start`
+### Siri Lite Cli (version Vuejs)
+http://siri-demo-siri-demo.7e14.starter-us-west-2.openshiftapps.com/siri-lite-vue/index.html
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+### Siri Lite Cli (version Reactjs)
+http://siri-demo-siri-demo.7e14.starter-us-west-2.openshiftapps.com/siri-lite-react/index.html
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+## siri-lite-react
 
-### `npm test`
+### Utilisation
+java -jar siri_demo-1.0.0.jar  
+URL : <http://localhost:8080/siri-lite-react/index.html>  
+Build : npm run build
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Fonctionnalitées
+**siri-lite-react** est un client permettant l’interrogation des services StopPointsDiscovery et StopMonitoring d' un serveur SIRI-LITE. 
 
-### `npm run build`
+* Les points d’arrêts sont affichés sur un fond cartographique OSM (StopPointsDiscovery).
+* Un clic gauche sur un point d’arrêt permet d'afficher le résultat d'une requête SIRI LITE StopMonitoring.
+* Les vues StopMonitoring est actualisés périodiquement.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Principes
+**siri-cli-react** est une application reactjs mettant en œuvre Leaflet.  
+Les popups Leaflet affiche un formulaire reactjs.
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+Ex: StopMonitoring  
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+![siri-lite-cli logo](siri-lite-react.png "siri-lite-cli")
 
-### `npm run eject`
+## siri-demo
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### Fonctionnalitées
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+**siri-demo** est une application Spring Boot (Java 8) de démonstration permettant la publication d'information transport dans les formats   
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+* Soap Webservice asynchrone SIRI (LinesDiscovery, StopPointsDiscovery, StopMonitoring, EstimatedTimetable)  
+  Spécification : <http://www.normes-donnees-tc.org/format-dechange/donnees-temps-reel/>
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
-## Learn More
+  Ex: StopMonitoring
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+      curl 'http://127.0.0.1:8080/siri' -H 'Origin: http://localhost:8080' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4' -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36' -H 'Content-Type: text/xml' -H 'Accept: application/json, text/plain, */*' -H 'Referer: http://localhost:8080/siri-cli/stop-monitoring' -H 'Connection: keep-alive' --data-binary '<?xml version="1.0"?><soap:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"><soap:Body><tns:GetStopMonitoring xmlns:siri="http://www.siri.org.uk/siri" xmlns:acsb="http://www.ifopt.org.uk/acsb" xmlns:ifopt="http://www.ifopt.org.uk/ifopt" xmlns:datex="http://datex2.eu/schema/2_0RC1/2_0" xmlns:tns="http://wsdl.siri.org.uk"><ServiceRequestInfo><siri:RequestTimestamp>2017-10-13T10:11:58.031Z</siri:RequestTimestamp><siri:RequestorRef>default:default</siri:RequestorRef><siri:MessageIdentifier>1507889518031</siri:MessageIdentifier></ServiceRequestInfo><Request version="2.0:FR-IDF-2.4"><siri:RequestTimestamp>2017-10-13T10:11:58.031Z</siri:RequestTimestamp><siri:MessageIdentifier>1507889518031</siri:MessageIdentifier><siri:MonitoringRef>StopArea:8775860</siri:MonitoringRef><siri:MaximumStopVisits>10</siri:MaximumStopVisits></Request><RequestExtension/></tns:GetStopMonitoring></soap:Body></soap:Envelope>'
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+* REST Webservice asynchrone SIRI-LITE (LinesDiscovery, StopPointsDiscovery, StopMonitoring, EstimatedTimetable)  
+  Spécification : <http://www.normes-donnees-tc.org/wp-content/uploads/2017/01/Proposition-Profil-SIRI-Lite-initial-v1-2.pdf>
+    
+    Ex: StopMonitoring  
 
-### Code Splitting
+        curl 'http://127.0.0.1:8080/siri-lite/stop-monitoring?MonitoringRef=StopArea:59226&MaximumStopVisits=10' -H 'Origin: http://localhost:8080' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4' -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36' -H 'Content-Type: application/json' -H 'Accept: application/json, text/plain, */*' -H 'Referer: http://localhost:8080/siri-lite-cli/index.html' -H 'Connection: keep-alive'
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+* REST GTFS-RT asynchrone  (TripUpdate / stop_id / route_id  )  
+Spécification : <https://developers.google.com/transit/gtfs-realtime/>
+    
+    Ex: TripUpdate par stop_id
 
-### Analyzing the Bundle Size
+        curl 'http://127.0.0.1:8080/gtfs-rt/trip-update?stop_id=StopArea:59:3747822' -H 'Origin: http://localhost:8080' -H 'Accept-Encoding: gzip, deflate, br' -H 'Accept-Language: fr-FR,fr;q=0.8,en-US;q=0.6,en;q=0.4' -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36' -H 'Accept: application/octet-stream' -H 'Referer: http://localhost:8080/siri-lite-cli/index.html' -H 'Connection: keep-alive' 
+ 
+Ce serveur est initialiser avec un jeu de données "open data" du STIF (Syndicat de Transport D'Ile de France)
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+* 1 775 lignes,
+* 59 022 points d'arrêt,  
+* 302 484 courses,
+* 6 726 298 horaires  
 
-### Making a Progressive Web App
+### Performance
+L'offre de transport d'une journée type du STIF contient approximativement 200 000 courses et 3 000 000 d'horaires.  
+L'initialisation du modèle dure approximativement 1 minute.  
+Ce serveur nécessite ~ 1 Go de RAM.  
+Le serveur traite une requête en ~ 10 ms sur un Core i7 3630QM (Linux).  
+Ce serveur est prévue pour être déployé au sein d'un cluster.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify

@@ -2,10 +2,10 @@ import React from "react";
 import StopPointsDiscoveryComponent from "./components/stop-points-discovery/StopPointsDiscoveryComponent";
 import 'bootstrap/dist/css/bootstrap.css';
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { fas } from '@fortawesome/free-solid-svg-icons'
+import { faBus } from '@fortawesome/free-solid-svg-icons'
 import "./App.scss";
 
-library.add(fas)
+library.add(faBus)
 
 class App extends React.Component {
 
