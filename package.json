@@ -8,7 +8,6 @@
     "@fortawesome/free-solid-svg-icons": "^5.8.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
     "bootstrap": "^4.3.1",
-    "debug": "^4.1.1",
     "leaflet": "^1.4.0",
     "moment": "^2.24.0",
     "node-sass": "^4.12.0",
