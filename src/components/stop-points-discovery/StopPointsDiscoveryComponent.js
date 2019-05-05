@@ -1,11 +1,11 @@
 import React from "react";
 import ReactDOM from 'react-dom';
 import PropTypes from "prop-types";
-import { ReactReduxContext } from "react-redux";
+import { Provider, connect } from "react-redux";
+import { createSelector } from 'reselect'
 import * as L from "leaflet";
-// import debug from "debug";
 
-
+import store from "../../store"
 import "./StopPointsDiscoveryComponent.scss";
 import actions, { loadStopPointsDiscovery } from "../../actions";
 import * as T from "../../types";
@@ -13,12 +13,9 @@ import StopMonitoringComponent from "../stop-monitoring/StopMonitoringComponent"
 
 class StopPointsDiscoveryComponent extends React.Component {
 
-    static contextType = ReactReduxContext;
-
     constructor(props) {
         super(props);
         this.ref = React.createRef();
-        this.handleChange = this.handleChange.bind(this);
     }
 
     componentDidMount() {
@@ -29,13 +26,8 @@ class StopPointsDiscoveryComponent extends React.Component {
         this.dispose();
     }
 
-    handleChange() {
-        const select = state => state.stopPointsDiscovery;
-        let previous = this.current;
-        this.current = select(this.context.store.getState())
-        if (previous !== this.current) {
-            this.update(this.current);
-        }
+    componentDidUpdate() {
+        this.update(this.props.value.Siri);
     }
 
     initialize() {
@@ -58,15 +50,12 @@ class StopPointsDiscoveryComponent extends React.Component {
         this.popups = L.layerGroup([]).addTo(this.map);
         L.control.scale().addTo(this.map);
 
-        this.unsubscribe = this.context.store.subscribe(this.handleChange);
-
         this.map.on("moveend", this.load, this);
         this.load();
     }
 
     dispose() {
-        this.unsubscribe();
-        this.context.store.dispatch(actions.stopPointsDiscovery.loadFailure({}));
+        this.props.onClose();
     }
 
     load() {
@@ -80,19 +69,8 @@ class StopPointsDiscoveryComponent extends React.Component {
                     new L.LatLng(bounds.getSouth() - dy, bounds.getWest() - dx),
                     new L.LatLng(bounds.getNorth() + dy, bounds.getEast() + dx)
                 );
-
-                let url = (process.env.NODE_ENV !== "production") ? "http://127.0.0.1:8080" : ""
-                 url += "/siri-lite/stop-points-discovery" +
-                    "?" + T.UPPER_LEFT_LONGITUDE + "=" + this.bounds.getNorthWest().lng +
-                    "&" + T.UPPER_LEFT_LATITUDE + "=" + this.bounds.getNorthWest().lat +
-                    "&" + T.LOWER_RIGHT_LONGITUDE + "=" + this.bounds.getSouthEast().lng +
-                    "&" + T.LOWER_RIGHT_LATITUDE + "=" + this.bounds.getSouthEast().lat;
-
-                this.context.store.dispatch(loadStopPointsDiscovery(url));
+                this.props.onChange(this.bounds);
             }
-        } else {
-            console.log(actions);
-            this.context.store.dispatch(actions.stopPointsDiscovery.loadFailure({}));
         }
     }
 
@@ -102,11 +80,10 @@ class StopPointsDiscoveryComponent extends React.Component {
     }
 
     update(value) {
-
         this.markers.clearLayers();
         this.popups.clearLayers();
-        if (value.Siri) {
-            let array = value.Siri.StopPointsDelivery.AnnotatedStopPointRef;
+        if (value) {
+            let array = value.StopPointsDelivery.AnnotatedStopPointRef;
 
             array.forEach(i => {
                 let latlng = L.latLng(i.Location.Latitude, i.Location.Longitude);
@@ -140,7 +117,7 @@ class StopPointsDiscoveryComponent extends React.Component {
 
             let div = document.createElement('div');
             popup.setContent(div);
-            const element = <StopMonitoringComponent store={this.context.store} name={marker.options.alt} />;
+            const element = <Provider store={store}><StopMonitoringComponent name={marker.options.alt} length={10} /></Provider>;
             ReactDOM.render(element, div);
 
             marker.bindPopup(popup);
@@ -153,14 +130,17 @@ class StopPointsDiscoveryComponent extends React.Component {
     }
 
     render() {
-        return <div id="map" ref={this.ref} />;
+        return (<div id="map" ref={this.ref} />);
     }
 }
 
 StopPointsDiscoveryComponent.propTypes = {
-    url: PropTypes.string,
-    center: PropTypes.array,
-    zoom: PropTypes.number
+    url: PropTypes.string.isRequired,
+    center: PropTypes.array.isRequired,
+    zoom: PropTypes.number.isRequired,
+    value: PropTypes.object.isRequired,
+    onChange: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired
 };
 
 StopPointsDiscoveryComponent.defaultProps = {
@@ -168,4 +148,34 @@ StopPointsDiscoveryComponent.defaultProps = {
     zoom: 17
 };
 
-export default StopPointsDiscoveryComponent; 
+const mapDispatchToProps = (dispatch) => {
+    return {
+        onClose: () => dispatch(actions.stopPointsDiscovery.loadFailure({})),
+        onChange: (bounds) => {
+            let url = (process.env.NODE_ENV !== "production") ? "http://127.0.0.1:8080" : ""
+            url += "/siri-lite/stop-points-discovery" +
+                "?" + T.UPPER_LEFT_LONGITUDE + "=" + bounds.getNorthWest().lng +
+                "&" + T.UPPER_LEFT_LATITUDE + "=" + bounds.getNorthWest().lat +
+                "&" + T.LOWER_RIGHT_LONGITUDE + "=" + bounds.getSouthEast().lng +
+                "&" + T.LOWER_RIGHT_LATITUDE + "=" + bounds.getSouthEast().lat;
+
+            dispatch(loadStopPointsDiscovery(url));
+        }
+    }
+}
+
+const selector = createSelector((state, props) => state.stopPointsDiscovery, value => value);
+
+const mapStateToProps = (state, props) => {
+    return {
+        url: props.url,
+        center: props.center,
+        zoom: props.zoom,
+        value: selector(state, props)
+    };
+}
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(StopPointsDiscoveryComponent);

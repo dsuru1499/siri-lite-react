@@ -1,88 +1,58 @@
 import React from "react";
+import { connect } from 'react-redux'
 import PropTypes from "prop-types";
+import { createSelector } from 'reselect'
 import Moment from 'react-moment';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import debug from "debug";
 
-import * as T from "../../types"
-import actions, { loadStopMonitoring } from "../../actions"
+import actions, { loadStopMonitoring } from "../../actions";
+import * as T from "../../types";
 import "./StopMonitoringComponent.scss"
 
 class StopMonitoringComponent extends React.Component {
 
     constructor(props) {
         super(props);
-        this.state = { counter: 0 };
-        this.load = this.load.bind(this);
-        this.handleChange = this.handleChange.bind(this);
+        this.counter = 1;
     }
 
     componentDidMount() {
         this.initialize();
-        this._isMounted = true;
     }
 
     componentWillUnmount() {
-        this._isMounted = false;
         this.dispose();
     }
-
-    handleChange() {
-        const select = state => (state.stopMonitoring[this.props.name]) ? state.stopMonitoring[this.props.name].Siri.ResponseMessageIdentifier : undefined;
-        let previous = this.current;
-        this.current = select(this.props.store.getState())
-        if (previous !== this.current && this._isMounted) {
-            debug.log("update %s previous : %s / current : %s", this.props.name, previous, this.current);
-            this.setState({ counter: this.state.counter + 1 });
-        }
-    }
-
+    
     initialize() {
-        debug.log("initialize %s", this.props.name);
-        this.unsubscribe = this.props.store.subscribe(this.handleChange);
-        this.timer = setInterval(this.load, 10000);
-        this.load();
+        this.props.onChange(this.props);
+        this.timer = setInterval((e) => this.counter++ && this.props.onChange(this.props), 10000);
     }
 
     dispose() {
-        debug.log("dispose %s", this.props.name);
         clearInterval(this.timer);
-        this.unsubscribe();
-        this.props.store.dispatch(actions.stopMonitoring.loadFailure({}, this.props.name));
-    }
-
-    load() {
-        let url = (process.env.NODE_ENV !== "production") ? "http://127.0.0.1:8080" : ""
-        url += "/siri-lite/stop-monitoring"
-            + "?" + T.MONITORING_REF + "=" + this.props.name
-            + "&" + T.MAXIMUM_STOP_VISITS + "=" + this.props.length
-            + "&" + T.MAXIMUM_NUMBER_CALLS_OF_PREVIOUS + "=" + 0
-            + "&" + T.MAXIMUM_NUMBER_CALLS_OF_ONWARDS + "=" + 0;
-
-        this.props.store.dispatch(loadStopMonitoring(url, this.props.name));
+        this.props.onClose(this.props);
     }
 
     render() {
-        const select = state => state.stopMonitoring[this.props.name];
-        let current = select(this.props.store.getState());
-        let values = (current) ? current.Siri.StopMonitoringDelivery.MonitoredStopVisit : [];
 
-        const Row = (props) => (<tr >
-            <th scope="row"><Moment format="HH:mm">{props.value.MonitoredVehicleJourney.MonitoredCall.ExpectedDepartureTime}</Moment></th>
-            <td style={{ textTransform: 'uppercase' }}>{props.value.MonitoredVehicleJourney.DestinationName}</td>
-            <td style={{ textTransform: 'uppercase' }}>{props.value.MonitoredVehicleJourney.PublishedLineName}</td>
-            <td>
-                <FontAwesomeIcon style={{ color: "steelblue" }} icon="bus" />
-            </td>
-        </tr>
-        )
+        const Row = (props) => {
+            return (<tr >
+                <th scope="row"><Moment format="HH:mm">{props.value.MonitoredCall.ExpectedDepartureTime}</Moment></th>
+                <td style={{ textTransform: 'uppercase' }}>{props.value.DestinationName}</td>
+                <td style={{ textTransform: 'uppercase' }}>{props.value.PublishedLineName}</td>
+                <td>
+                    <FontAwesomeIcon style={{ color: "steelblue" }} icon="bus" />
+                </td>
+            </tr>)
+        }
 
-        const Rows = (props) => (
-            props.values.map((value) => <Row value={value} key={value.ItemIdentifier} />)
-        )
+        const Rows = (props) => {
+            return (props.values) ? props.values.map((value) => <Row value={value.MonitoredVehicleJourney} key={value.ItemIdentifier} />) : (null);
+        }
 
         return (<div>
-            <h5>#{this.state.counter} StopMonitoring: {this.props.name}</h5>
+            <h5>#{this.counter} StopMonitoring: {this.props.name}</h5>
             <table className="table table-sm table-hover">
                 <thead>
                     <tr>
@@ -93,21 +63,49 @@ class StopMonitoringComponent extends React.Component {
                     </tr>
                 </thead>
                 <tbody>
-                    <Rows values={values} />
+                    <Rows values={this.props.values} />
                 </tbody>
             </table>
-        </div >)
+        </div >);
     }
 }
 
 StopMonitoringComponent.propTypes = {
-    store: PropTypes.object,
-    name: PropTypes.string,
-    length: PropTypes.number
+    name: PropTypes.string.isRequired,
+    length: PropTypes.number.isRequired,
+    values: PropTypes.array.isRequired,
+    onChange: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired
 };
 
-StopMonitoringComponent.defaultProps = {
-    length: 10
-};
+const mapDispatchToProps = (dispatch) => {
+    return {
+        onClose: (props) => dispatch(actions.stopMonitoring.loadFailure({}, props.name)),
+        onChange: (props) => {
+            let url = (process.env.NODE_ENV !== "production") ? "http://127.0.0.1:8080" : ""
+            url += "/siri-lite/stop-monitoring"
+                + "?" + T.MONITORING_REF + "=" + props.name
+                + "&" + T.MAXIMUM_STOP_VISITS + "=" + props.length
+                + "&" + T.MAXIMUM_NUMBER_CALLS_OF_PREVIOUS + "=" + 0
+                + "&" + T.MAXIMUM_NUMBER_CALLS_OF_ONWARDS + "=" + 0;
 
-export default StopMonitoringComponent; 
+            dispatch(loadStopMonitoring(url, props.name));
+        }
+    }
+}
+
+const selector = createSelector((state, props) => state.stopMonitoring[props.name],
+    value => value ? value.Siri.StopMonitoringDelivery.MonitoredStopVisit : []);
+
+const mapStateToProps = (state, props) => {
+    return {
+        name: props.name,
+        length: props.length,
+        values: selector(state, props)
+    };
+}
+
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps
+)(StopMonitoringComponent);
