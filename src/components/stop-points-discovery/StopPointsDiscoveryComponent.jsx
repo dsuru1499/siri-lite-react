@@ -69,7 +69,13 @@ class StopPointsDiscoveryComponent extends React.Component {
                     new L.LatLng(bounds.getSouth() - dy, bounds.getWest() - dx),
                     new L.LatLng(bounds.getNorth() + dy, bounds.getEast() + dx)
                 );
-                this.props.onChange(this.bounds);
+                const options = {
+                    [T.UPPER_LEFT_LONGITUDE]: bounds.getNorthWest().lng,
+                    [T.UPPER_LEFT_LATITUDE]: bounds.getNorthWest().lat,
+                    [T.LOWER_RIGHT_LONGITUDE]: bounds.getSouthEast().lng,
+                    [T.LOWER_RIGHT_LATITUDE]: bounds.getSouthEast().lat,
+                };
+                this.props.onChange(options);
             }
         }
     }
@@ -150,16 +156,9 @@ StopPointsDiscoveryComponent.defaultProps = {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        onClose: () => dispatch(actions.stopPointsDiscovery.loadFailure({})),
-        onChange: (bounds) => {
-            let url = (process.env.NODE_ENV !== "production") ? "http://127.0.0.1:8080" : ""
-            url += "/siri-lite/stop-points-discovery" +
-                "?" + T.UPPER_LEFT_LONGITUDE + "=" + bounds.getNorthWest().lng +
-                "&" + T.UPPER_LEFT_LATITUDE + "=" + bounds.getNorthWest().lat +
-                "&" + T.LOWER_RIGHT_LONGITUDE + "=" + bounds.getSouthEast().lng +
-                "&" + T.LOWER_RIGHT_LATITUDE + "=" + bounds.getSouthEast().lat;
-
-            dispatch(loadStopPointsDiscovery(url));
+        onClose: () => dispatch(actions.stopPointsDiscovery.failure({})),
+        onChange: (options) => {
+            dispatch(loadStopPointsDiscovery(options));
         }
     }
 }

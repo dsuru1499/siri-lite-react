@@ -23,15 +23,21 @@ class StopMonitoringComponent extends React.Component {
     componentWillUnmount() {
         this.dispose();
     }
-    
+
     initialize() {
-        this.props.onChange(this.props);
-        this.timer = setInterval((e) => this.counter++ && this.props.onChange(this.props), 10000);
+        const options = {
+            [T.MONITORING_REF]: this.props.name,
+            [T.MAXIMUM_STOP_VISITS]: this.props.length,
+            [T.MAXIMUM_NUMBER_CALLS_OF_PREVIOUS]: 0,
+            [T.MAXIMUM_NUMBER_CALLS_OF_ONWARDS]: 0,
+        };
+        this.props.onChange(options);
+        this.timer = setInterval((e) => this.counter++ && this.props.onChange(options), 10000);
     }
 
     dispose() {
         clearInterval(this.timer);
-        this.props.onClose(this.props);
+        this.props.onClose();
     }
 
     render() {
@@ -80,16 +86,9 @@ StopMonitoringComponent.propTypes = {
 
 const mapDispatchToProps = (dispatch) => {
     return {
-        onClose: (props) => dispatch(actions.stopMonitoring.loadFailure({}, props.name)),
-        onChange: (props) => {
-            let url = (process.env.NODE_ENV !== "production") ? "http://127.0.0.1:8080" : ""
-            url += "/siri-lite/stop-monitoring"
-                + "?" + T.MONITORING_REF + "=" + props.name
-                + "&" + T.MAXIMUM_STOP_VISITS + "=" + props.length
-                + "&" + T.MAXIMUM_NUMBER_CALLS_OF_PREVIOUS + "=" + 0
-                + "&" + T.MAXIMUM_NUMBER_CALLS_OF_ONWARDS + "=" + 0;
-
-            dispatch(loadStopMonitoring(url, props.name));
+        onClose: () => dispatch(actions.stopMonitoring.failure({})),
+        onChange: (options) => {
+            dispatch(loadStopMonitoring(options, options[T.MONITORING_REF]));
         }
     }
 }
