@@ -70,13 +70,15 @@ class StopPointsDiscoveryComponent extends React.Component {
                     new L.LatLng(bounds.getNorth() + dy, bounds.getEast() + dx)
                 );
                 const options = {
-                    [T.UPPER_LEFT_LONGITUDE]: bounds.getNorthWest().lng,
-                    [T.UPPER_LEFT_LATITUDE]: bounds.getNorthWest().lat,
-                    [T.LOWER_RIGHT_LONGITUDE]: bounds.getSouthEast().lng,
-                    [T.LOWER_RIGHT_LATITUDE]: bounds.getSouthEast().lat,
+                    [T.UPPER_LEFT_LONGITUDE]: this.bounds.getNorthWest().lng,
+                    [T.UPPER_LEFT_LATITUDE]: this.bounds.getNorthWest().lat,
+                    [T.LOWER_RIGHT_LONGITUDE]: this.bounds.getSouthEast().lng,
+                    [T.LOWER_RIGHT_LATITUDE]: this.bounds.getSouthEast().lat,
                 };
                 this.props.onChange(options);
             }
+        }else {
+            this.props.onClose();
         }
     }
 
